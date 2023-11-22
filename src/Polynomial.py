@@ -24,18 +24,19 @@ class Polynomial:
     def __add__(self, other):
         assert isinstance(other, Polynomial) and self.base == other.base
         newSize = max(self.coefficients.shape[-1], other.coefficients.shape[-1])
-        coeff1 = np.pad(self, pad_width=(newSize - self.coefficients.shape[-1], 0), mode='constant',
+        coeff1 = np.pad(self.coefficients, pad_width=(newSize - self.coefficients.shape[-1], 0), mode='constant',
                         constant_values=(0, 0))
-        coeff2 = np.pad(other, pad_width=(newSize - other.coefficients.shape[-1], 0), mode='constant',
+        coeff2 = np.pad(other.coefficients, pad_width=(newSize - other.coefficients.shape[-1], 0), mode='constant',
                         constant_values=(0, 0))
+        a = coeff1
         return Polynomial(coeff1 + coeff2, self.base)
 
     def __sub__(self, other):
         assert isinstance(other, Polynomial) and self.base == other.base
         newSize = max(self.coefficients.shape[-1], other.coefficients.shape[-1])
-        coeff1 = np.pad(self, pad_width=(newSize - self.coefficients.shape[-1], 0), mode='constant',
+        coeff1 = np.pad(self.coefficients, pad_width=(newSize - self.coefficients.shape[-1], 0), mode='constant',
                         constant_values=(0, 0))
-        coeff2 = np.pad(other, pad_width=(newSize - other.coefficients.shape[-1], 0), mode='constant',
+        coeff2 = np.pad(other.coefficients, pad_width=(newSize - other.coefficients.shape[-1], 0), mode='constant',
                         constant_values=(0, 0))
         return Polynomial(coeff1 - coeff2, self.base)
 
