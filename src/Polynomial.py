@@ -55,8 +55,8 @@ class Polynomial:
         return np.polydiv(coefficients, f)[1].astype(int)
 
     @staticmethod
-    def init_many(multi_coefficients, base: ModuloBase):
-        return [Polynomial(coefficients=coefficients, base=base) for coefficients in multi_coefficients]
+    def init_many(multi_coefficients: np.array, base: ModuloBase):
+        return np.apply_along_axis(lambda x: Polynomial(coefficients=x, base=base), -1, multi_coefficients)
 
     @staticmethod
     def zero(base):
