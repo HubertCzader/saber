@@ -8,10 +8,12 @@ def accurate_round(x):
 
 
 class ModuloBase:
-    def __init__(self, f, q, p):
-        self.f = f % q
-        self.q = q
-        self.p = p
+    def __init__(self, f, epsilon_q, epsilon_p):
+        self.epsilon_q = epsilon_q
+        self.epsilon_p = epsilon_p
+        self.q = 2 ** epsilon_q
+        self.p = 2 ** epsilon_p
+        self.f = f % self.q
 
     def __eq__(self, other):
         return self.q == other.q and np.array_equal(self.f, other.f)
