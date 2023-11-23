@@ -1,7 +1,8 @@
 import numpy as np
 
 
-
+def accurate_round(x):
+    return np.where(np.abs((x - x.astype(int))) < 0.5, x.astype(int), x.astype(int) + np.sign(x)).astype(int)
 
 
 class ModuloBase:
@@ -15,5 +16,5 @@ class ModuloBase:
     def rebase(self, p):
         return ModuloBase(self.f, p)
 
-    def round_mod(self, x):
-        return accurate_round(x*(self.p/self.q)) % self.p
+    def round_mod(self, x, p):
+        return accurate_round(x * (p / self.q)) % p

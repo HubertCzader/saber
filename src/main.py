@@ -1,4 +1,4 @@
-from Polynomial import Polynomial
+from src.Polynomial import Polynomial
 from src.ModuloBase import ModuloBase
 import numpy as np
 
