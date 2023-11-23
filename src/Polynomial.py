@@ -3,6 +3,10 @@ import numpy as np
 from src.ModuloBase import ModuloBase
 
 
+def accurate_round(x):
+    return np.where(np.abs((x - x.astype(int))) < 0.5, x.astype(int), x.astype(int) + np.sign(x)).astype(int)
+
+
 class Polynomial:
     def __init__(self, coefficients, base: ModuloBase):
         if isinstance(coefficients, list):
@@ -10,6 +14,10 @@ class Polynomial:
         assert (coefficients.dtype == int)
         self.coefficients = self.__mod(coefficients, base.f) % base.q
         self.base = base
+
+    def rebase(self, p):
+        rebased_coefficients = accurate_round(self.coefficients*(p/self.base.q))
+        return Polynomial(rebased_coefficients, self.base.rebase(p))
 
     def __add__(self, other):
         assert isinstance(other, Polynomial) and self.base == other.base

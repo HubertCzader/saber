@@ -8,7 +8,7 @@ from src.Polynomial import Polynomial
 class TestPolynomial(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.base = ModuloBase(np.array([1, 0, 0, 1], dtype=int), 17, 11)
+        cls.base = ModuloBase(np.array([1, 0, 0, 1], dtype=int), 17)
 
     def test_createPolynomial(self):
         Polynomial(np.array([23, 45, 2, 1, 42], dtype=int), self.base)
@@ -24,3 +24,9 @@ class TestPolynomial(TestCase):
         poly = Polynomial([1], self.base)
         result = poly_array1 @ poly_array2.T - poly
         self.assertEqual(Polynomial.zero(self.base), result)
+
+    def test_correctlyRebase(self):
+        poly1 = Polynomial(np.array([23, 45, 2, 1, 42], dtype=int), self.base)
+        poly2 = poly1.rebase(11)
+        expected = Polynomial(np.array([1, 8, 9], dtype=int), self.base.rebase(11))
+        self.assertEqual(poly2, expected)
