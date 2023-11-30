@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.ModuloBase import ModuloBase
+from src.ModuloBase import ModuloBase, accurate_round
 
 
 class Polynomial:

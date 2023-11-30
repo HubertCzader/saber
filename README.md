@@ -5,3 +5,4 @@ Projekt realizowany z przedmiotu Kryptografia Postkwantowa na kierunku Informaty
 - Hubert Czader ([@HubertCzader](https://github.com/HubertCzader))
 - Marcin Szubert ([@marszub](https://github.com/marszub))
 - Joanna Fortuna ([@Yoanka](https://github.com/Yoanka))
+- Adam Klekowski ([@aklekowski](https://github.com/aklekowski))
