@@ -46,6 +46,6 @@ def key_gen(n: int = 256, _l: int = 3, epsilon_p: int = 10, epsilon_q: int = 13,
     r = np.random.uniform(size=n).round().astype(int)
     s = np.array([Polynomial(np.random.binomial(n=mi, p=r, size=n), base) for _ in range(_l)])
 
-    b = (np.matmul(A.transpose(), h) % q) >> (epsilon_q-epsilon_p)
+    b = ((np.matmul(A.transpose(), s) + h) % q) >> (epsilon_q-epsilon_p)
 
     return seed, b
