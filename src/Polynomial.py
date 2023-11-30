@@ -26,7 +26,7 @@ class Polynomial:
         return Polynomial(coeff1 + coeff2, self.base)
 
     def __neg__(self):
-        return Polynomial(self.coefficients, self.base)
+        return Polynomial(-self.coefficients, self.base)
 
     def __sub__(self, other):
         return self + (-other)
