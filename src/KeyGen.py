@@ -31,7 +31,7 @@ def gen(seed: np.array, base: ModuloBase, n: int, _l: int, epsilon_q: int) -> np
 # generate a public key
 # default values conform to the Saber security level
 def key_gen(n: int = 256, _l: int = 3, epsilon_p: int = 10, epsilon_q: int = 13,
-            mi: int = 8) -> Tuple[np.array, np.array]:
+            mi: int = 8) -> Tuple[np.array, Tuple[np.array, np.array]]:
     seed = np.random.uniform(size=n).round().astype(int)
 
     q = 2 ** epsilon_q
@@ -48,4 +48,4 @@ def key_gen(n: int = 256, _l: int = 3, epsilon_p: int = 10, epsilon_q: int = 13,
 
     b = ((np.matmul(A.transpose(), s) + h) % q) >> (epsilon_q-epsilon_p)
 
-    return seed, b
+    return s, (seed, b)
