@@ -21,6 +21,7 @@ def decrypt(s, cryptogram, epsilon_q, epsilon_p, epsilon_t, n, f, p, q):
     single_coefficient = 2 ** (epsilon_p - 2) - 2 ** (epsilon_p - epsilon_t - 1) + 2 ** (epsilon_q - epsilon_t - 1)
     h2 = Polynomial(np.fill(n, single_coefficient), ModuloBase(f, q))
     v = (b_prim.T @ s)
+    #ToDo: Edytowac rebase
     m_prim = shift_right((v - 2 ** (epsilon_p - epsilon_t) * c_m + h2).rebase(p), 1)
     return round_all_Polynomials(m_prim, p)
 
