@@ -18,4 +18,4 @@ class Poly17(Polynomial):
 
     @staticmethod
     def get_base():
-        return ModuloBase(np.array([1, 0, 0, 0, 1], dtype=int), 17, 23)
+        return ModuloBase(np.array([1, 0, 0, 0, 1], dtype=int), 17)
