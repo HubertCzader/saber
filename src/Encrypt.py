@@ -12,7 +12,7 @@ def encrypt(seed_A: np.array, b: np.array, m: np.array, q: int, p: int, n: int, 
     A = gen(seed_A, q_base, n, l, eps_q)
     sp = np.array([Polynomial(np.random.binomial(n=mi, p=r, size=n), p_base) for _ in range(l)])
     sq = np.array([Polynomial(np.random.binomial(n=mi, p=r, size=n), q_base) for _ in range(l)])
-    bp = shift_right(A@sq + h, eps_q - eps_p).rebase(p)
+    bp = shift_right(A@sq + h, eps_q - eps_p).rebase(p) # Error: rebase on np.array
     vp = b.T@sp
     m = Polynomial(m, p_base)
     cm = vp + h1.rebase(p) - 2**(eps_p - 1) * m
