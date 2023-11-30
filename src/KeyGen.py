@@ -6,10 +6,9 @@ from Crypto.Hash import SHAKE128
 import numpy as np
 
 
-def gen(seed: np.array, base: ModuloBase, n: int, _l: int, epsilon_q: int):
+def gen(seed: np.array, base: ModuloBase, n: int, _l: int, epsilon_q: int) -> np.array:
     # todo: check if seed is of length n, or trim/extend it to size
     byte_seed = np.packbits(seed.reshape((-1, 8))).tobytes()
-    print(byte_seed)
     shake = SHAKE128.new()
     shake.update(byte_seed)
 
@@ -36,8 +35,8 @@ def key_gen(n: int = 256, _l: int = 3, epsilon_p: int = 10, epsilon_q: int = 13,
     seed = np.random.uniform(size=n).round().astype(int)
 
     q = 2 ** epsilon_q
-
     base = ModuloBase(np.array(([1]+[0]*(n-1)+[1]), dtype=int), q)
+
     h1_elem = np.power(2, (epsilon_q-epsilon_p-1))
     h1 = Polynomial(np.array([h1_elem]*n), base)
     h = np.array([h1]*_l, dtype=Polynomial)
@@ -46,13 +45,7 @@ def key_gen(n: int = 256, _l: int = 3, epsilon_p: int = 10, epsilon_q: int = 13,
 
     r = np.random.uniform(size=n).round().astype(int)
     s = np.array([Polynomial(np.random.binomial(n=mi, p=r, size=n), base) for _ in range(_l)])
-    print(s.shape)
 
     b = (np.matmul(A.transpose(), h) % q) >> (epsilon_q-epsilon_p)
-    print(b)
 
     return seed, b
-
-
-if __name__ == "__main__":
-    key_gen()
