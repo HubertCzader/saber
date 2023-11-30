@@ -31,12 +31,10 @@ def gen(seed: np.array, base: ModuloBase, n: int, _l: int, epsilon_q: int):
 
 # generate a public key
 # default values conform to the Saber security level
-def key_gen(seed: Union[np.array, list], n: int = 256, _l: int = 3, epsilon_p: int = 10, epsilon_q: int = 13,
-            epsilon_t: int = 4, mi: int = 8) -> Tuple[np.array, np.array]:
-    # todo: if seed is a list, make it into np.array
-    if isinstance(seed, list):
-        seed = np.array(seed)
-    p = 2 ** epsilon_p
+def key_gen(n: int = 256, _l: int = 3, epsilon_p: int = 10, epsilon_q: int = 13,
+            mi: int = 8) -> Tuple[np.array, np.array]:
+    seed = np.random.uniform(size=n).round().astype(int)
+
     q = 2 ** epsilon_q
 
     base = ModuloBase(np.array(([1]+[0]*(n-1)+[1]), dtype=int), q)
@@ -57,7 +55,4 @@ def key_gen(seed: Union[np.array, list], n: int = 256, _l: int = 3, epsilon_p: i
 
 
 if __name__ == "__main__":
-    n = 256
-    seed = np.random.uniform(size=n).round().astype(int)
-
-    key_gen(seed, n=n)
+    key_gen()
