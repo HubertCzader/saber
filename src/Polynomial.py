@@ -54,6 +54,17 @@ class Polynomial:
             and self.base == other.base \
             and np.all(self.coefficients == other.coefficients)
 
+    def __mod__(self, other):
+        if isinstance(other, int):
+            return Polynomial(self.coefficients % other, self.base)
+        else:
+            raise TypeError("Polynomial % () accepts only int types")
+
+    def __rshift__(self, other):
+        if isinstance(other, int):
+            return Polynomial(self.coefficients >> other, self.base)
+        else:
+            raise TypeError("Polynomial >> () accepts only int types")
     @staticmethod
     def __mod(coefficients, f):
         return np.polydiv(coefficients, f)[1].astype(int)
