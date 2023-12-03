@@ -1,2 +1,2 @@
 numpy>=1.20
-crypto==1.4.1
+pycryptodome>=3.19.0
