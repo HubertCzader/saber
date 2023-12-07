@@ -4,16 +4,27 @@ from src.ModuloBase import ModuloBase, accurate_round
 
 
 class Polynomial:
-    def __init__(self, coefficients, base: ModuloBase):
+    def __init__(self, coefficients, base: ModuloBase, n: int = None):
         if isinstance(coefficients, list):
             coefficients = np.array(coefficients, dtype=int)
         assert (coefficients.dtype == int)
         self.coefficients = self.__mod(coefficients, base.f) % base.q
+        if n:
+            self.coefficients = np.pad(self.coefficients, (n - self.coefficients.size, 0), constant_values=0)
         self.base = base
 
-    def rebase(self, p):
+    def rebase(self, p, v=False):
         rebased_coefficients = accurate_round(self.coefficients*(p/self.base.q))
-        return Polynomial(rebased_coefficients, self.base.rebase(p))
+        if v:
+            print(self.coefficients.size)
+            print(rebased_coefficients.size)
+            print(self.coefficients*(p/self.base.q))
+            print(self.coefficients)
+            print(rebased_coefficients)
+            print(p)
+            print(self.base.rebase(p).f.size)
+            print(self.base.rebase(p).q)
+        return Polynomial(rebased_coefficients, self.base.rebase(p), self.coefficients.size)
 
     def __add__(self, other):
         assert isinstance(other, Polynomial) and self.base == other.base
@@ -46,8 +57,12 @@ class Polynomial:
     def __repr__(self):
         if self.coefficients.shape[-1] == 0:
             return "0"
-        return ''.join([f"{int(coeff)}x^{self.coefficients.shape[-1] - i - 1}+" for i, coeff in
-                        enumerate(self.coefficients[:-1])]) + f"{int(self.coefficients[-1])}"
+        if np.all(self.coefficients == 0):
+            return "0"
+
+        n = self.coefficients.shape[-1]
+        return ''.join([f'{"+" if coeff > 0 and i > 0 else ""}{coeff if coeff != 0 else ""}{"x^%d" % (n-i-1) if n-i-1 > 0 and coeff != 0 else ""}' for i, coeff
+                        in enumerate(self.coefficients)])
 
     def __eq__(self, other):
         return isinstance(other, Polynomial) \
@@ -62,12 +77,23 @@ class Polynomial:
 
     def __rshift__(self, other):
         if isinstance(other, int):
-            return Polynomial(self.coefficients >> other, self.base)
+            shifted = Polynomial(self.coefficients >> other, self.base, self.coefficients.size)
+            # print(len(shifted.coefficients))
+            # print(shifted.coefficients)
+            # print(len(self.coefficients))
+            # print(self.coefficients)
+            assert self.coefficients.size == (self.coefficients >> other).size
+
+            print(shifted.coefficients.size)
+            print(self.coefficients.size)
+
+            assert shifted.coefficients.size == self.coefficients.size
+            return shifted
         else:
             raise TypeError("Polynomial >> () accepts only int types")
     @staticmethod
     def __mod(coefficients, f):
-        return np.polydiv(coefficients, f)[1].astype(int)
+        return (np.polydiv(coefficients, f)[1]).astype(int)
 
     @staticmethod
     def init_many(multi_coefficients: np.ndarray, base: ModuloBase):
