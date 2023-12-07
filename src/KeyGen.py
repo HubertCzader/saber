@@ -35,6 +35,7 @@ def key_gen(n: int = 256, _l: int = 3, epsilon_p: int = 10, epsilon_q: int = 13,
     seed = np.random.uniform(size=n).round().astype(int)
 
     q = 2 ** epsilon_q
+    p = 2 ** epsilon_p
     base = ModuloBase(np.array(([1]+[0]*(n-1)+[1]), dtype=int), q)
 
     h1_elem = np.power(2, (epsilon_q-epsilon_p-1))
@@ -47,5 +48,6 @@ def key_gen(n: int = 256, _l: int = 3, epsilon_p: int = 10, epsilon_q: int = 13,
     s = np.array([Polynomial(np.random.binomial(n=mi, p=r, size=n), base) for _ in range(_l)])
 
     b = ((np.matmul(A.transpose(), s) + h) % q) >> (epsilon_q-epsilon_p)
+    b = np.array([x.rebase(p) for x in b])
 
     return s, (seed, b)
