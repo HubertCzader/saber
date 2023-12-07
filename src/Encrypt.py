@@ -6,7 +6,7 @@ from src.Polynomial import Polynomial
 from src.KeyGen import gen
 
 
-def encrypt(seed_A: np.array, b: np.array, m: np.array, q: int, p: int, n: int, l: int, mi, r: np.array, h, h1, eps_q, eps_p, eps_T):
+def encrypt(seed_A: np.ndarray, b: np.ndarray, m: np.ndarray, q: int, p: int, n: int, l: int, mi, r: np.ndarray, h, h1, eps_q, eps_p, eps_T):
     p_base = ModuloBase(np.array([1, 0, 0, 0, 1], dtype=int), p)
     q_base = ModuloBase(np.array([1, 0, 0, 0, 1], dtype=int), q)
     A = gen(seed_A, q_base, n, l, eps_q)
