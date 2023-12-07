@@ -8,7 +8,7 @@ import pytest
 # tests ####################################################
 
 
-def test_key_generation(light_saber_test_cases):
+def test_key_generation(light_saber_configuration, light_saber_test_cases):
     from KeyGen import key_gen
 
     for kat_test_case_data in light_saber_test_cases:
@@ -25,6 +25,15 @@ class KatTestCaseData:
     sk: str
     ct: str
     ss: str
+
+
+@dataclass()
+class SaberConfiguration:
+    n: int
+    l: int
+    epsilon_p: int
+    epsilon_q: int
+    mi: int
 
 # fixtures ##################################################
 
@@ -45,3 +54,14 @@ def light_saber_test_cases():
         )
         test_cases.append(tmp_kat)
     return test_cases
+
+
+@pytest.fixture
+def light_saber_configuration():
+    return SaberConfiguration(
+        n=256,
+        l=2,
+        epsilon_q=13,
+        epsilon_p=10,
+        mi=10
+    )
