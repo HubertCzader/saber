@@ -9,7 +9,8 @@ from src.Polynomial import Polynomial
 
 
 class Saber:
-    def __init__(self, n: int = 256, l: int = 3, eps_p: int = 10, eps_q: int = 13, eps_T: int = 4, mi: int = 8):
+    def __init__(self, n: int = 256, l: int = 3, eps_p: int = 10, eps_q: int = 13, eps_T: int = 4, mi: int = 8,
+                 rebase_alter: bool = True):
         self.seed_A = None
         self.b = None
         self.s = None
@@ -34,6 +35,9 @@ class Saber:
         self.h = np.full(self.l, self.h1)
         h2_coefficient = 2 ** (self.eps_p - 2) - 2 ** (self.eps_p - self.eps_T - 1) + 2 ** (self.eps_q - self.eps_T - 1)
         self.h2 = Polynomial(np.full(n, h2_coefficient), self.q_base)
+
+        # debug parameters
+        self.rebase_alter = rebase_alter
 
     def gen_A(self) -> np.ndarray:
         byte_seed = np.packbits(self.seed_A.reshape((-1, 8))).tobytes()
@@ -65,7 +69,7 @@ class Saber:
         self.s = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.q_base) for _ in range(self.l)])
 
         b = (np.matmul(A.transpose(), self.s) + self.h) >> (self.eps_q - self.eps_p)
-        self.b = np.array([poly.rebase(self.p) for poly in b])
+        self.b = np.array([poly.rebase(self.p, self.rebase_alter) for poly in b])
 
     def encrypt(self, m: np.ndarray, r: np.ndarray = None, verbose: bool = False) \
             -> Tuple[Polynomial, np.ndarray[Polynomial]]:
@@ -76,26 +80,26 @@ class Saber:
             r = np.random.uniform(size=self.n).round().astype(int)
 
         sp = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.p_base) for _ in range(self.l)])
-        sq = [poly.rebase(self.q) for poly in sp]
+        sq = [poly.rebase(self.q, self.rebase_alter) for poly in sp]
         A = self.gen_A()
         bp = (A @ sq + self.h) >> (self.eps_q - self.eps_p)
-        bp = np.array([x.rebase(self.p) for x in bp])
+        bp = np.array([x.rebase(self.p, self.rebase_alter) for x in bp])
         vp = self.b.T @ sp
         m = Polynomial(m, self.p_base)
         if verbose:
             print(f"vp: {vp}")
             print(f"mmod: {(2 ** (self.eps_p - 1)) * m}")
             print(f"h1: {self.h1}")
-            print(f"h1 in base p: {self.h1.rebase(self.p)}")
+            print(f"h1 in base p: {self.h1.rebase(self.p, self.rebase_alter)}")
 
-        cm: Polynomial = vp + self.h1.rebase(self.p) - (2 ** (self.eps_p - 1)) * m
+        cm: Polynomial = vp + self.h1.rebase(self.p, self.rebase_alter) - (2 ** (self.eps_p - 1)) * m
         cm = cm >> (self.eps_p - self.eps_T)
         if verbose:
             print(f"Shifted: {cm}")
             print(self.T)
             print(cm.base.q)
 
-        cm = cm.rebase(self.T, v=verbose)
+        cm = cm.rebase(self.T, self.rebase_alter, v=verbose)
         if verbose:
             print(f"Rebased: {cm}")
         return cm, bp
@@ -115,9 +119,9 @@ class Saber:
         assert isinstance(c_m, Polynomial)
         assert isinstance(b_prim, np.ndarray) and b_prim.dtype == Polynomial
 
-        s_p = np.array([poly.rebase(self.p) for poly in self.s])
+        s_p = np.array([poly.rebase(self.p, self.rebase_alter) for poly in self.s])
         v = (b_prim.T @ s_p)
         # ToDo: Edytowac rebase
-        m_prim = v - (2 ** (self.eps_p - self.eps_T) * c_m.rebase(self.p)) + self.h2.rebase(self.p)
-        m_prim = (m_prim >> (self.eps_p - 1)).rebase(2)
+        m_prim = v - (2 ** (self.eps_p - self.eps_T) * c_m.rebase(self.p, self.rebase_alter)) + self.h2.rebase(self.p, self.rebase_alter)
+        m_prim = (m_prim >> (self.eps_p - 1)).rebase(2, self.rebase_alter)
         return m_prim
