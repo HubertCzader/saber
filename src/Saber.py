@@ -67,7 +67,8 @@ class Saber:
         b = (np.matmul(A.transpose(), self.s) + self.h) >> (self.eps_q - self.eps_p)
         self.b = np.array([poly.rebase(self.p) for poly in b])
 
-    def encrypt(self, m: np.ndarray, r: np.ndarray = None) -> Tuple[Polynomial, np.ndarray[Polynomial]]:
+    def encrypt(self, m: np.ndarray, r: np.ndarray = None, verbose: bool = False) \
+            -> Tuple[Polynomial, np.ndarray[Polynomial]]:
         if self.seed_A is None:
             raise AttributeError("Key was not set. Use the Saber.set_key() method before encryption.")
 
@@ -75,22 +76,32 @@ class Saber:
             r = np.random.uniform(size=self.n).round().astype(int)
 
         sp = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.p_base) for _ in range(self.l)])
-        sq = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.q_base) for _ in range(self.l)])
+        sq = [poly.rebase(self.q) for poly in sp]
         A = self.gen_A()
-        bp = shift_right(A @ sq + self.h, self.eps_q - self.eps_p)
+        bp = (A @ sq + self.h) >> (self.eps_q - self.eps_p)
         bp = np.array([x.rebase(self.p) for x in bp])
         vp = self.b.T @ sp
         m = Polynomial(m, self.p_base)
-        # print(m)
-        cm: Polynomial = vp + self.h1.rebase(self.p) - 2 ** (self.eps_p - 1) * m
+        if verbose:
+            print(f"vp: {vp}")
+            print(f"mmod: {(2 ** (self.eps_p - 1)) * m}")
+            print(f"h1: {self.h1}")
+            print(f"h1 in base p: {self.h1.rebase(self.p)}")
+
+        cm: Polynomial = vp + self.h1.rebase(self.p) - (2 ** (self.eps_p - 1)) * m
         cm = cm >> (self.eps_p - self.eps_T)
-        print(f"Shifted: {cm}")
-        cm = cm.rebase(self.T, v=True)
-        print(f"Rebased: {cm}")
+        if verbose:
+            print(f"Shifted: {cm}")
+            print(self.T)
+            print(cm.base.q)
+
+        cm = cm.rebase(self.T, v=verbose)
+        if verbose:
+            print(f"Rebased: {cm}")
         return cm, bp
 
     @staticmethod
-    def round_all_Polynomials(vector: np.ndarray, p: int):
+    def round_all_Polynomials(vector: np.ndarray, p: int) -> np.ndarray[Polynomial]:
         def round_binary(number: int):
             if abs(number - p // 2) <= p // 4:
                 return 1
@@ -99,7 +110,7 @@ class Saber:
         return np.array([Polynomial(np.array([round_binary(coefficient) for coefficient in polynomial.coefficients]),
                                     polynomial.base) for polynomial in vector])
 
-    def decrypt(self, cryptogram: Tuple[np.ndarray[Polynomial], np.ndarray[Polynomial]]):
+    def decrypt(self, cryptogram: Tuple[Polynomial, np.ndarray[Polynomial]]):
         c_m, b_prim = cryptogram
         assert isinstance(c_m, Polynomial)
         assert isinstance(b_prim, np.ndarray) and b_prim.dtype == Polynomial

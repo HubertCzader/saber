@@ -27,7 +27,7 @@ class TestSaberSanity(unittest.TestCase):
         saber = Saber(n=n)
         saber.set_key()
         r = np.random.uniform(size=n).round().astype(int)
-        cryptogram = saber.encrypt(m, r)
+        cryptogram = saber.encrypt(m, r, verbose=True)
         print(cryptogram)
         print(saber.decrypt(cryptogram).coefficients)
 

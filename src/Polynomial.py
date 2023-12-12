@@ -16,15 +16,12 @@ class Polynomial:
     def rebase(self, p, v=False):
         rebased_coefficients = accurate_round(self.coefficients*(p/self.base.q))
         if v:
-            print(self.coefficients.size)
-            print(rebased_coefficients.size)
-            print(self.coefficients*(p/self.base.q))
-            print(self.coefficients)
-            print(rebased_coefficients)
-            print(p)
-            print(self.base.rebase(p).f.size)
-            print(self.base.rebase(p).q)
-        return Polynomial(rebased_coefficients, self.base.rebase(p), self.coefficients.size)
+            print(f"Old base: {self.base.q}, new base: {p}")
+            print(f"Coefficient size before: {self.coefficients.size}, after: {rebased_coefficients.size}")
+            print(f"Coefficients before: {self.coefficients}")
+            print(f"Rebased coefficients before round: \n{self.coefficients*(p/self.base.q)}")
+            print(f"Rebased coefficients after round: \n{rebased_coefficients}")
+        return Polynomial(self.coefficients, self.base.rebase(p), self.coefficients.size)
 
     def __add__(self, other):
         assert isinstance(other, Polynomial) and self.base == other.base
@@ -82,10 +79,8 @@ class Polynomial:
             # print(shifted.coefficients)
             # print(len(self.coefficients))
             # print(self.coefficients)
-            assert self.coefficients.size == (self.coefficients >> other).size
-
-            print(shifted.coefficients.size)
-            print(self.coefficients.size)
+            # print(shifted.coefficients.size)
+            # print(self.coefficients.size)
 
             assert shifted.coefficients.size == self.coefficients.size
             return shifted
