@@ -65,7 +65,9 @@ class Saber:
             r = np.random.uniform(size=self.n).round().astype(int)
 
         if s is None:
-            s = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.q_base) for _ in range(self.l)])
+            s = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.q_base)
+                          - Polynomial(self.n*[self.mi/2], self.q_base)
+                          for _ in range(self.l)])
         else:
             s = np.array([Polynomial(coefficients, self.q_base) for coefficients in s])
         self.s = s
@@ -85,7 +87,9 @@ class Saber:
             r = np.random.uniform(size=self.n).round().astype(int)
 
         if s is None:
-            sp = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.p_base) for _ in range(self.l)])
+            sp = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.p_base)
+                           - Polynomial(self.n*[self.mi/2], self.q_base)
+                           for _ in range(self.l)])
         else:
             sp = np.array([Polynomial(coefficients, self.p_base) for coefficients in s])
 
