@@ -59,7 +59,7 @@ class Saber:
                 A[A_row][A_col] = Polynomial(a, self.q_base)
         return A
 
-    def set_key(self, seed_A: np.ndarray[int] = None, r: np.ndarray[int] = None):
+    def set_key(self, seed_A: np.ndarray[int] = None, r: np.ndarray[int] = None, s: np.ndarray[int] = None):
         if seed_A is None:
             seed_A = np.random.uniform(size=self.n).round().astype(int)
         if r is None:
@@ -67,9 +67,13 @@ class Saber:
 
         generator = np.random.default_rng(r)
 
-        self.s = np.array([Polynomial(generator.binomial(n=self.mi, p=0.5, size=self.n), self.q_base)
-                           - Polynomial(self.n * [self.mi / 2], self.q_base)
-                           for _ in range(self.l)])
+        if s is None:
+            s = np.array([Polynomial(generator.binomial(n=self.mi, p=0.5, size=self.n), self.q_base)
+                          - Polynomial(self.n * [self.mi / 2], self.q_base)
+                          for _ in range(self.l)])
+        else:
+            s = np.array([Polynomial(coefficients, self.q_base) for coefficients in s])
+        self.s = s
 
         self.seed_A = seed_A
         A = self.gen_A(self.seed_A)
@@ -77,7 +81,7 @@ class Saber:
         b = (np.matmul(A.transpose(), self.s) + self.h) >> (self.eps_q - self.eps_p)
         self.b = np.array([poly.rebase(self.p, self.rebase_alter) for poly in b])
 
-    def encrypt(self, m: np.ndarray[int], r: np.ndarray[int] = None, s: np.ndarray[int] = None, verbose: bool = False) \
+    def encrypt(self, m: np.ndarray[int], r: np.ndarray[int] = None, sp: np.ndarray[int] = None, verbose: bool = False) \
             -> Tuple[Polynomial, np.ndarray[Polynomial]]:
         if self.seed_A is None:
             raise AttributeError("Key was not set. Use the Saber.set_key() method before encryption.")
@@ -87,12 +91,12 @@ class Saber:
 
         np.random.default_rng(r)
 
-        if s is None:
+        if sp is None:
             sp = np.array([Polynomial(np.random.binomial(n=self.mi, p=0.5, size=self.n), self.p_base)
-                           - Polynomial(self.n * [self.mi / 2], self.q_base)
+                           - Polynomial(self.n * [self.mi / 2], self.p_base)
                            for _ in range(self.l)])
         else:
-            sp = np.array([Polynomial(coefficients, self.p_base) for coefficients in s])
+            sp = np.array([Polynomial(coefficients, self.p_base) for coefficients in sp])
 
         sq = [poly.rebase(self.q, self.rebase_alter) for poly in sp]
 
