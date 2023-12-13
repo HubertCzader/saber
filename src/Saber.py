@@ -1,3 +1,10 @@
+"""
+H. Czader, M. Szubert, J. Fortuna, A. Klekowski
+Post-quantum Cryptography classes
+AGH University of Cracow
+
+Saber PKE implementation.
+"""
 from typing import Tuple
 
 import numpy as np

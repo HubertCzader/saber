@@ -1,3 +1,8 @@
+"""
+H. Czader, M. Szubert, J. Fortuna, A. Klekowski
+Post-quantum Cryptography classes
+AGH University of Cracow
+"""
 import numpy as np
 
 
