@@ -119,12 +119,12 @@ class Saber:
         return np.array([Polynomial(np.array([round_binary(coefficient) for coefficient in polynomial.coefficients]),
                                     polynomial.base) for polynomial in vector])
 
-    def decrypt(self, cryptogram: Tuple[Polynomial, np.ndarray[Polynomial]]):
+    def decrypt(self, cryptogram: Tuple[Polynomial, np.ndarray[Polynomial]], s):
         c_m, b_prim = cryptogram
         assert isinstance(c_m, Polynomial)
         assert isinstance(b_prim, np.ndarray) and b_prim.dtype == Polynomial
 
-        s_p = np.array([poly.rebase(self.p, self.rebase_alter) for poly in self.s])
+        s_p = np.array([poly.rebase(self.p, self.rebase_alter) for poly in s])
         v = (b_prim.T @ s_p)
 
         # ToDo: Edytowac rebase
