@@ -37,8 +37,8 @@ class Saber:
         # debug parameters
         self.rebase_alter = rebase_alter
 
-    def gen_A(self) -> np.ndarray:
-        byte_seed = np.packbits(self.seed_A.reshape((-1, 8))).tobytes()
+    def gen_A(self, seed_A) -> np.ndarray:
+        byte_seed = np.packbits(seed_A.reshape((-1, 8))).tobytes()
         shake = SHAKE128.new()
         shake.update(byte_seed)
 
@@ -61,12 +61,11 @@ class Saber:
     def set_key(self, seed_A: np.ndarray = None, r: np.ndarray = None):
         if seed_A is None:
             seed_A = np.random.uniform(size=self.n).round().astype(int)
-
         if r is None:
             r = np.random.uniform(size=self.n).round().astype(int)
 
         self.seed_A = seed_A
-        A = self.gen_A()
+        A = self.gen_A(self.seed_A)
 
         self.s = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.q_base) for _ in range(self.l)])
 
@@ -83,7 +82,7 @@ class Saber:
 
         sp = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.p_base) for _ in range(self.l)])
         sq = [poly.rebase(self.q, self.rebase_alter) for poly in sp]
-        A = self.gen_A()
+        A = self.gen_A(self.seed_A)
         bp = (A @ sq + self.h) >> (self.eps_q - self.eps_p)
         bp = np.array([x.rebase(self.p, self.rebase_alter) for x in bp])
         vp = self.b.T @ sp
@@ -123,6 +122,7 @@ class Saber:
 
         s_p = np.array([poly.rebase(self.p, self.rebase_alter) for poly in self.s])
         v = (b_prim.T @ s_p)
+
         # ToDo: Edytowac rebase
         m_prim = v - (2 ** (self.eps_p - self.eps_T) * c_m.rebase(self.p, self.rebase_alter)) + self.h2.rebase(self.p, self.rebase_alter)
         m_prim = (m_prim >> (self.eps_p - 1)).rebase(2, self.rebase_alter)
