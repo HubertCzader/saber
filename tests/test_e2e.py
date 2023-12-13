@@ -1,4 +1,8 @@
 """
+H. Czader, M. Szubert, J. Fortuna, A. Klekowski
+Post-quantum Cryptography classes
+AGH University of Cracow
+
 End-to-End tests containing:
 - generate a key and a random message
 - encrypt and decrypt the message
