@@ -1,4 +1,8 @@
 """
+H. Czader, M. Szubert, J. Fortuna, A. Klekowski
+Postqauntum cryptography classes
+AGH University of Cracow
+
 Saber.PKE parameter sets.
 Based on the official paper "SABER: Mod-LWR based KEM (Round 3 Submission)"
 """
