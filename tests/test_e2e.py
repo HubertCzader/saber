@@ -14,9 +14,10 @@ def test_end2end():
 
     total_attempts = 10
     successful_attempts = 0
+
     for _ in range(total_attempts):
         saber.set_key()
-        msg = np.array([1, 0, 0, 0, 1, 1, 0, 1], dtype=int)
+        msg = np.random.randint(2, size=256)
         encrypted_msg = saber.encrypt(msg)
         decrypted_msg = saber.decrypt(encrypted_msg)
         if decrypted_msg == msg:

@@ -58,16 +58,20 @@ class Saber:
                 A[A_row][A_col] = Polynomial(a, self.q_base)
         return A
 
-    def set_key(self, seed_A: np.ndarray = None, r: np.ndarray = None):
+    def set_key(self, seed_A: np.ndarray[int] = None, r: np.ndarray[int] = None, s: np.ndarray[int] = None):
         if seed_A is None:
             seed_A = np.random.uniform(size=self.n).round().astype(int)
         if r is None:
             r = np.random.uniform(size=self.n).round().astype(int)
 
+        if s is None:
+            s = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.q_base) for _ in range(self.l)])
+        else:
+            s = np.array([Polynomial(coefficients, self.q_base) for coefficients in s])
+        self.s = s
+
         self.seed_A = seed_A
         A = self.gen_A(self.seed_A)
-
-        self.s = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.q_base) for _ in range(self.l)])
 
         b = (np.matmul(A.transpose(), self.s) + self.h) >> (self.eps_q - self.eps_p)
         self.b = np.array([poly.rebase(self.p, self.rebase_alter) for poly in b])
