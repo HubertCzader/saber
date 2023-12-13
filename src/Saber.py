@@ -72,7 +72,7 @@ class Saber:
         b = (np.matmul(A.transpose(), self.s) + self.h) >> (self.eps_q - self.eps_p)
         self.b = np.array([poly.rebase(self.p, self.rebase_alter) for poly in b])
 
-    def encrypt(self, m: np.ndarray, r: np.ndarray = None, verbose: bool = False) \
+    def encrypt(self, m: np.ndarray[int], r: np.ndarray[int] = None, s: np.ndarray[int] = None, verbose: bool = False) \
             -> Tuple[Polynomial, np.ndarray[Polynomial]]:
         if self.seed_A is None:
             raise AttributeError("Key was not set. Use the Saber.set_key() method before encryption.")
@@ -80,13 +80,20 @@ class Saber:
         if r is None:
             r = np.random.uniform(size=self.n).round().astype(int)
 
-        sp = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.p_base) for _ in range(self.l)])
+        if s is None:
+            sp = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.p_base) for _ in range(self.l)])
+        else:
+            sp = np.array([Polynomial(coefficients, self.p_base) for coefficients in s])
+
         sq = [poly.rebase(self.q, self.rebase_alter) for poly in sp]
+
         A = self.gen_A(self.seed_A)
         bp = (A @ sq + self.h) >> (self.eps_q - self.eps_p)
         bp = np.array([x.rebase(self.p, self.rebase_alter) for x in bp])
         vp = self.b.T @ sp
+
         m = Polynomial(m, self.p_base)
+
         if verbose:
             print(f"vp: {vp}")
             print(f"mmod: {(2 ** (self.eps_p - 1)) * m}")
