@@ -1,6 +1,6 @@
 """
 H. Czader, M. Szubert, J. Fortuna, A. Klekowski
-Postqauntum cryptography classes
+Postquantum cryptography classes
 AGH University of Cracow
 
 Saber.PKE parameter sets.
