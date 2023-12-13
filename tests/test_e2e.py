@@ -23,9 +23,9 @@ def test_end2end():
     times = []
 
     for _ in range(total_attempts):
+        msg = np.random.randint(2, size=256)
         start_time = time.time()
         s, (seed, b) = saber.generate_key()
-        msg = np.random.randint(2, size=256)
         cryptogram = saber.encrypt(msg, seed, b)
         decrypted_msg = saber.decrypt(cryptogram, b)
         end_time = time.time()
