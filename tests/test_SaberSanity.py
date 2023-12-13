@@ -5,6 +5,7 @@ import numpy as np
 from src.ModuloBase import ModuloBase
 from src.Polynomial import Polynomial
 from src.Saber import Saber
+from src.SaberConfiguration import SaberConfiguration
 
 
 class TestSaberSanity(unittest.TestCase):
@@ -32,17 +33,27 @@ class TestSaberSanity(unittest.TestCase):
         print(saber.decrypt(cryptogram).coefficients)
 
     def test_generate_example(self):
+        config = SaberConfiguration(l=2, n=4, epsilon_q=4, epsilon_p=3, epsilon_T=2, mi=2)
         n = 4
         l = 2
         mi = 2
         r = 42
+        rp = 32
         eps_q = 4
         eps_p = 3
         eps_T = 2
+        m = np.array([0, 0, 1, 1], dtype=int)
+        seed_A = np.array([1, 1, 1, 0, 1, 1, 1, 0], dtype=int)
+        saber = Saber(config)
         gen = np.random.default_rng(seed=r)
         s = np.array([gen.binomial(n=mi, p=0.5, size=n) for _ in range(l)])
-        print(r)
-        print(s)
+        s, (_, b) = saber.generate_key(seed_A, r)
+        A = saber.gen_A(seed_A)
+        saber.encrypt(m, seed_A, b, rp)
+        #
+        # print(r)
+        # print(s)
+        print(A)
 
 
 if __name__ == '__main__':
