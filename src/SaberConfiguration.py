@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 @dataclass()
 class SaberConfiguration:
-    # n, l: The degree n = 256 of the polynomial ring Z_q[X]/(X^n + 1) and the rank l of
+    # n, l: The degree n = 256 of the polynomial ring Z_q[X] / (X^n + 1) and the rank l of
     # the module which determine the dimension of the underlying lattice problem as l · n.
     # Increasing the dimension of the lattice problem increases the security, but reduces the correctness.
     l: int
