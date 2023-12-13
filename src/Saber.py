@@ -10,9 +10,6 @@ from src.SaberConfiguration import SaberConfiguration, LIGHT_SABER
 
 class Saber:
     def __init__(self, saber_configuration: SaberConfiguration = LIGHT_SABER, rebase_alter: bool = False):
-        self.seed_A = None
-        self.b = None
-        self.s = None
         self.mi = saber_configuration.mi
         self.n = saber_configuration.n
         self.l = saber_configuration.l
@@ -59,16 +56,22 @@ class Saber:
                 A[A_row][A_col] = Polynomial(a, self.q_base)
         return A
 
-    def generate_key(self, seed_A=None, r=None):
-        if seed_A is None:
-            seed_A = np.random.uniform(size=self.n).round().astype(int)
+    def __generate_s(self, base, r=None):
         if r is None:
             r = np.random.uniform(size=256).round().astype(int)
 
         generator = np.random.default_rng(r)
-        s = np.array([Polynomial(generator.binomial(n=self.mi, p=0.5, size=self.n).round().astype(int), self.q_base)
-                      - Polynomial(self.n * [self.mi / 2], self.q_base)
+        s = np.array([Polynomial(generator.binomial(n=self.mi, p=0.5, size=self.n).round().astype(int), base)
+                      - Polynomial(self.n * [self.mi / 2], base)
                       for _ in range(self.l)])
+
+        return s
+
+    def generate_key(self, seed_A=None, r=None):
+        if seed_A is None:
+            seed_A = np.random.uniform(size=self.n).round().astype(int)
+
+        s = self.__generate_s(r, self.q_base)
 
         A = self.gen_A(seed_A)
         b = (np.matmul(A.transpose(), s) + self.h) >> (self.eps_q - self.eps_p)
@@ -78,14 +81,7 @@ class Saber:
     def encrypt(self, m: np.ndarray[int], seed_A, b, rp: np.ndarray[int] = None, verbose: bool = False) \
             -> Tuple[Polynomial, np.ndarray[Polynomial]]:
 
-        if rp is None:
-            rp = np.random.uniform(size=self.n).round().astype(int)
-
-        generator = np.random.default_rng(rp)
-        sp = np.array([Polynomial(generator.binomial(n=self.mi, p=0.5, size=self.n).round().astype(int), self.p_base)
-                       - Polynomial(self.n * [self.mi / 2], self.p_base)
-                       for _ in range(self.l)])
-
+        sp = self.__generate_s(self.p_base, rp)
         sq = [poly.rebase(self.q, self.rebase_alter) for poly in sp]
 
         A = self.gen_A(seed_A)
