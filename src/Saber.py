@@ -6,35 +6,34 @@ from Crypto.Hash import SHAKE128
 from src.LogicalShift import shift_right
 from src.ModuloBase import ModuloBase
 from src.Polynomial import Polynomial
+from src.SaberConfiguration import SaberConfiguration, LIGHT_SABER
 
 
 class Saber:
-    def __init__(self, n: int = 256, l: int = 3, eps_p: int = 10, eps_q: int = 13, eps_T: int = 4, mi: int = 8,
-                 rebase_alter: bool = True):
+    def __init__(self, saber_configuration: SaberConfiguration = LIGHT_SABER, rebase_alter: bool = True):
         self.seed_A = None
         self.b = None
         self.s = None
-        self.mi = mi
-        self.n = n
-        self.l = l
+        self.mi = saber_configuration.mi
+        self.n = saber_configuration.n
+        self.l = saber_configuration.l
 
-        assert eps_p < eps_q
-        assert eps_T < eps_p
-        self.eps_p = eps_p
-        self.p = 2**eps_p
-        self.eps_q = eps_q
-        self.q = 2**eps_q
-        self.eps_T = eps_T
-        self.T = 2 ** eps_T
+        self.eps_p = saber_configuration.epsilon_p
+        self.p = 2**saber_configuration.epsilon_p
+        self.eps_q = saber_configuration.epsilon_q
+        self.q = 2**saber_configuration.epsilon_q
+        self.eps_T = saber_configuration.epsilon_T
+        self.T = 2 ** saber_configuration.epsilon_T
 
-        poly_base = [1]+[0]*(n-1)+[1]
+        poly_base = [1]+[0]*(saber_configuration.n-1)+[1]
         self.p_base = ModuloBase(np.array(poly_base, dtype=int), self.p)
         self.q_base = ModuloBase(np.array(poly_base, dtype=int), self.q)
 
-        self.h1 = Polynomial(np.full(n, 2**(eps_q-eps_p-1)), self.q_base)
+        self.h1 = Polynomial(np.full(saber_configuration.n,
+                                     2**(saber_configuration.epsilon_q-saber_configuration.epsilon_p-1)), self.q_base)
         self.h = np.full(self.l, self.h1)
         h2_coefficient = 2 ** (self.eps_p - 2) - 2 ** (self.eps_p - self.eps_T - 1) + 2 ** (self.eps_q - self.eps_T - 1)
-        self.h2 = Polynomial(np.full(n, h2_coefficient), self.q_base)
+        self.h2 = Polynomial(np.full(saber_configuration.n, h2_coefficient), self.q_base)
 
         # debug parameters
         self.rebase_alter = rebase_alter
