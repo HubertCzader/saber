@@ -91,7 +91,7 @@ class Saber:
         if seed_A is None:
             seed_A = np.random.uniform(size=self.n).round().astype(int)
 
-        s = self.__generate_s(r, self.q_base)
+        s = self.__generate_s(self.q_base, r)
 
         A = self.gen_A(seed_A)
         b = (np.matmul(A.transpose(), s) + self.h) >> (self.eps_q - self.eps_p)

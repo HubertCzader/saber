@@ -34,26 +34,29 @@ class TestSaberSanity(unittest.TestCase):
 
     def test_generate_example(self):
         config = SaberConfiguration(l=2, n=4, epsilon_q=4, epsilon_p=3, epsilon_T=2, mi=2)
-        n = 4
-        l = 2
-        mi = 2
         r = 42
         rp = 32
-        eps_q = 4
-        eps_p = 3
-        eps_T = 2
         m = np.array([0, 0, 1, 1], dtype=int)
         seed_A = np.array([1, 1, 1, 0, 1, 1, 1, 0], dtype=int)
         saber = Saber(config)
-        gen = np.random.default_rng(seed=r)
-        s = np.array([gen.binomial(n=mi, p=0.5, size=n) for _ in range(l)])
         s, (_, b) = saber.generate_key(seed_A, r)
         A = saber.gen_A(seed_A)
-        saber.encrypt(m, seed_A, b, rp)
-        #
-        # print(r)
-        # print(s)
-        print(A)
+        cryptogram = saber.encrypt(m, seed_A, b, rp)
+        mp = saber.decrypt(cryptogram, s)
+        np.testing.assert_array_equal(m, mp.coefficients)
+
+    def test_big_example(self):
+        config = SaberConfiguration(l=2, n=16, epsilon_q=4, epsilon_p=3, epsilon_T=2, mi=6)
+        r = 42
+        rp = 32
+        m = np.array([0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1], dtype=int)
+        seed_A = np.array([1, 1, 1, 0, 1, 1, 1, 0], dtype=int)
+        saber = Saber(config)
+        s, (_, b) = saber.generate_key(seed_A, r)
+        A = saber.gen_A(seed_A)
+        cryptogram = saber.encrypt(m, seed_A, b, rp)
+        mp = saber.decrypt(cryptogram, s)
+        np.testing.assert_array_equal(m, mp.coefficients)
 
 
 if __name__ == '__main__':
