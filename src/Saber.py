@@ -6,6 +6,7 @@ AGH University of Cracow
 Saber PKE implementation.
 """
 from typing import Tuple
+from dataclasses import dataclass
 
 import numpy as np
 from Crypto.Hash import SHAKE128
@@ -13,6 +14,18 @@ from Crypto.Hash import SHAKE128
 from src.ModuloBase import ModuloBase
 from src.Polynomial import Polynomial
 from src.SaberConfiguration import SaberConfiguration, LIGHT_SABER
+
+
+@dataclass
+class Pk:
+    seed_A: np.ndarray[int]
+    b: np.ndarray[Polynomial]
+
+
+@dataclass
+class Cryptogram:
+    C_m: Polynomial
+    b_prim: np.ndarray[Polynomial]
 
 
 class Saber:
