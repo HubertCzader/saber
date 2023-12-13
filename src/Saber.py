@@ -24,7 +24,7 @@ class Pk:
 
 @dataclass
 class Cryptogram:
-    C_m: Polynomial
+    c_m: Polynomial
     b_prim: np.ndarray[Polynomial]
 
 
