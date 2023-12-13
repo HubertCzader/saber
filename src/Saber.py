@@ -3,7 +3,6 @@ from typing import Tuple
 import numpy as np
 from Crypto.Hash import SHAKE128
 
-from src.LogicalShift import shift_right
 from src.ModuloBase import ModuloBase
 from src.Polynomial import Polynomial
 from src.SaberConfiguration import SaberConfiguration, LIGHT_SABER
