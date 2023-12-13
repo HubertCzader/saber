@@ -9,7 +9,7 @@ from src.SaberConfiguration import SaberConfiguration, LIGHT_SABER
 
 
 class Saber:
-    def __init__(self, saber_configuration: SaberConfiguration = LIGHT_SABER, rebase_alter: bool = True):
+    def __init__(self, saber_configuration: SaberConfiguration = LIGHT_SABER, rebase_alter: bool = False):
         self.seed_A = None
         self.b = None
         self.s = None
