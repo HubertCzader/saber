@@ -31,6 +31,19 @@ class TestSaberSanity(unittest.TestCase):
         print(cryptogram)
         print(saber.decrypt(cryptogram).coefficients)
 
+    def test_generate_example(self):
+        n = 4
+        l = 2
+        mi = 2
+        r = 42
+        eps_q = 4
+        eps_p = 3
+        eps_T = 2
+        gen = np.random.default_rng(seed=r)
+        s = np.array([gen.binomial(n=mi, p=0.5, size=n) for _ in range(l)])
+        print(r)
+        print(s)
+
 
 if __name__ == '__main__':
     unittest.main()

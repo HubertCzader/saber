@@ -18,18 +18,19 @@ class Saber:
         self.l = saber_configuration.l
 
         self.eps_p = saber_configuration.epsilon_p
-        self.p = 2**saber_configuration.epsilon_p
+        self.p = 2 ** saber_configuration.epsilon_p
         self.eps_q = saber_configuration.epsilon_q
-        self.q = 2**saber_configuration.epsilon_q
+        self.q = 2 ** saber_configuration.epsilon_q
         self.eps_T = saber_configuration.epsilon_T
         self.T = 2 ** saber_configuration.epsilon_T
 
-        poly_base = [1]+[0]*(saber_configuration.n-1)+[1]
+        poly_base = [1] + [0] * (saber_configuration.n - 1) + [1]
         self.p_base = ModuloBase(np.array(poly_base, dtype=int), self.p)
         self.q_base = ModuloBase(np.array(poly_base, dtype=int), self.q)
 
         self.h1 = Polynomial(np.full(saber_configuration.n,
-                                     2**(saber_configuration.epsilon_q-saber_configuration.epsilon_p-1)), self.q_base)
+                                     2 ** (saber_configuration.epsilon_q - saber_configuration.epsilon_p - 1)),
+                             self.q_base)
         self.h = np.full(self.l, self.h1)
         h2_coefficient = 2 ** (self.eps_p - 2) - 2 ** (self.eps_p - self.eps_T - 1) + 2 ** (self.eps_q - self.eps_T - 1)
         self.h2 = Polynomial(np.full(saber_configuration.n, h2_coefficient), self.q_base)
@@ -58,21 +59,17 @@ class Saber:
                 A[A_row][A_col] = Polynomial(a, self.q_base)
         return A
 
-    def set_key(self, seed_A: np.ndarray[int] = None, r: np.ndarray[int] = None, s: np.ndarray[int] = None):
+    def set_key(self, seed_A: np.ndarray[int] = None, r: np.ndarray[int] = None):
         if seed_A is None:
             seed_A = np.random.uniform(size=self.n).round().astype(int)
         if r is None:
-            r = np.random.uniform(size=self.n).round().astype(int)
+            r = np.random.uniform(size=256).round().astype(int)
 
-        np.random.default_rng(r)
+        generator = np.random.default_rng(r)
 
-        if s is None:
-            s = np.array([Polynomial(np.random.binomial(n=self.mi, p=0.5, size=self.n), self.q_base)
-                          - Polynomial(self.n*[self.mi/2], self.q_base)
-                          for _ in range(self.l)])
-        else:
-            s = np.array([Polynomial(coefficients, self.q_base) for coefficients in s])
-        self.s = s
+        self.s = np.array([Polynomial(generator.binomial(n=self.mi, p=0.5, size=self.n), self.q_base)
+                           - Polynomial(self.n * [self.mi / 2], self.q_base)
+                           for _ in range(self.l)])
 
         self.seed_A = seed_A
         A = self.gen_A(self.seed_A)
@@ -92,7 +89,7 @@ class Saber:
 
         if s is None:
             sp = np.array([Polynomial(np.random.binomial(n=self.mi, p=0.5, size=self.n), self.p_base)
-                           - Polynomial(self.n*[self.mi/2], self.q_base)
+                           - Polynomial(self.n * [self.mi / 2], self.q_base)
                            for _ in range(self.l)])
         else:
             sp = np.array([Polynomial(coefficients, self.p_base) for coefficients in s])
@@ -143,6 +140,7 @@ class Saber:
         v = (b_prim.T @ s_p)
 
         # ToDo: Edytowac rebase
-        m_prim = v - (2 ** (self.eps_p - self.eps_T) * c_m.rebase(self.p, self.rebase_alter)) + self.h2.rebase(self.p, self.rebase_alter)
+        m_prim = v - (2 ** (self.eps_p - self.eps_T) * c_m.rebase(self.p, self.rebase_alter)) + self.h2.rebase(self.p,
+                                                                                                               self.rebase_alter)
         m_prim = (m_prim >> (self.eps_p - 1)).rebase(2, self.rebase_alter)
         return m_prim
