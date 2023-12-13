@@ -37,8 +37,8 @@ class Saber:
         # debug parameters
         self.rebase_alter = rebase_alter
 
-    def gen_A(self) -> np.ndarray:
-        byte_seed = np.packbits(self.seed_A.reshape((-1, 8))).tobytes()
+    def gen_A(self, seed_A) -> np.ndarray:
+        byte_seed = np.packbits(seed_A.reshape((-1, 8))).tobytes()
         shake = SHAKE128.new()
         shake.update(byte_seed)
 
@@ -58,10 +58,13 @@ class Saber:
                 A[A_row][A_col] = Polynomial(a, self.q_base)
         return A
 
+    def generate_key(self):
+        seed_A = np.random.uniform(size=self.n).round().astype(int)
+
     def set_key(self):
         self.seed_A = np.random.uniform(size=self.n).round().astype(int)
 
-        A = self.gen_A()
+        A = self.gen_A(self.seed_A)
 
         r = np.random.uniform(size=self.n).round().astype(int)
         self.s = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.q_base) for _ in range(self.l)])
@@ -79,7 +82,7 @@ class Saber:
 
         sp = np.array([Polynomial(np.random.binomial(n=self.mi, p=r, size=self.n), self.p_base) for _ in range(self.l)])
         sq = [poly.rebase(self.q, self.rebase_alter) for poly in sp]
-        A = self.gen_A()
+        A = self.gen_A(self.seed_A)
         bp = (A @ sq + self.h) >> (self.eps_q - self.eps_p)
         bp = np.array([x.rebase(self.p, self.rebase_alter) for x in bp])
         vp = self.b.T @ sp
