@@ -18,7 +18,7 @@ class Polynomial:
             self.coefficients = np.pad(self.coefficients, (n - self.coefficients.size, 0), constant_values=0)
         self.base = base
 
-    def rebase(self, p: int, alter: bool = True, v: bool = False):
+    def rebase(self, p: int, alter: bool = False, v: bool = False):
         rebased_coefficients = accurate_round(self.coefficients*(p/self.base.q))
         if v:
             print(f"Old base: {self.base.q}, new base: {p}")
