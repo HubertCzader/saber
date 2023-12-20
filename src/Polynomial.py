@@ -18,18 +18,8 @@ class Polynomial:
             self.coefficients = np.pad(self.coefficients, (n - self.coefficients.size, 0), constant_values=0)
         self.base = base
 
-    def rebase(self, p: int, alter: bool = False, v: bool = False):
-        rebased_coefficients = accurate_round(self.coefficients*(p/self.base.q))
-        if v:
-            print(f"Old base: {self.base.q}, new base: {p}")
-            print(f"Coefficient size before: {self.coefficients.size}, after: {rebased_coefficients.size}")
-            print(f"Coefficients before: {self.coefficients}")
-            print(f"Rebased coefficients before round: \n{self.coefficients*(p/self.base.q)}")
-            print(f"Rebased coefficients after round: \n{rebased_coefficients}")
-        if alter:
-            return Polynomial(rebased_coefficients, self.base.rebase(p), self.coefficients.size)
-        else:
-            return Polynomial(self.coefficients, self.base.rebase(p), self.coefficients.size)
+    def rebase(self, p: int):
+        return Polynomial(self.coefficients, self.base.rebase(p), self.coefficients.size)
 
     def __add__(self, other):
         assert isinstance(other, Polynomial) and self.base == other.base
