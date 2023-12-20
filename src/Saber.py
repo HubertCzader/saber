@@ -29,7 +29,7 @@ class Cryptogram:
 
 
 class Saber:
-    def __init__(self, saber_configuration: SaberConfiguration = LIGHT_SABER, rebase_alter: bool = False):
+    def __init__(self, saber_configuration: SaberConfiguration = LIGHT_SABER):
         self.mi = saber_configuration.mi
         self.n = saber_configuration.n
         self.l = saber_configuration.l
@@ -51,9 +51,6 @@ class Saber:
         self.h = np.full(self.l, self.h1)
         h2_coefficient = 2 ** (self.eps_p - 2) - 2 ** (self.eps_p - self.eps_T - 1) + 2 ** (self.eps_q - self.eps_T - 1)
         self.h2 = Polynomial(np.full(saber_configuration.n, h2_coefficient), self.q_base)
-
-        # debug parameters
-        self.rebase_alter = rebase_alter
 
     def gen_A(self, seed_A) -> np.ndarray:
         byte_seed = np.packbits(seed_A.reshape((-1, 8))).tobytes()
@@ -97,7 +94,7 @@ class Saber:
         bq = np.matmul(A.transpose(), s)
         b = (bq + self.h) >> (self.eps_q - self.eps_p)
         b = np.array([poly.rebase(self.p) for poly in b])
-        return s, (seed_A, b, bq)
+        return s, (seed_A, bq)
 
     def encrypt(self, m: np.ndarray[int], seed_A, b, rp: np.ndarray[int] = None) \
             -> Tuple[Polynomial, np.ndarray[Polynomial]]:
@@ -110,8 +107,7 @@ class Saber:
         bp = bp >> (self.eps_q - self.eps_p)
         bp = np.array([x.rebase(self.p) for x in bp])
         b = np.array([poly.rebase(self.p) for poly in b])
-        bt = np.atleast_2d(b).T
-        vp: Polynomial = b.T @ sq
+        vp: Polynomial = b.T @ sp
         vp = vp.rebase(self.p)
 
         # vp wychodzi źle -> na papierze 2x^3, 2x^2, 2x, 0 -> vp wychodzi dobrze JEŚLI b jest zwracane w Rq
@@ -135,5 +131,5 @@ class Saber:
         v = (b_prim.T @ s_p)
 
         m_prim = v - (2 ** (self.eps_p - self.eps_T) * c_m.rebase(self.p)) + self.h2.rebase(self.p)
-        m_prim = (m_prim >> (self.eps_p - 1)).rebase(2, self.rebase_alter)
+        m_prim = (m_prim >> (self.eps_p - 1)).rebase(2)
         return m_prim
