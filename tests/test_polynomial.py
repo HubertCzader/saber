@@ -21,7 +21,7 @@ class TestPolynomial(TestCase):
     def test_polynomialAsArrayElement(self):
         poly_array1 = Polynomial.init_many(np.array([[1, 0, 0], [0, 0, 0]]), self.base)
         poly_array2 = Polynomial.init_many(np.array([[0, 1, 0], [2, 5, 4]]), self.base)
-        poly = Polynomial([1], self.base)
+        poly = Polynomial([16], self.base)
         result = poly_array1 @ poly_array2.T - poly
         self.assertEqual(Polynomial.zero(self.base), result)
 
