@@ -28,5 +28,5 @@ class TestPolynomial(TestCase):
     def test_correctlyRebase(self):
         poly1 = Polynomial(np.array([23, 45, 2, 1, 42], dtype=int), self.base)
         poly2 = poly1.rebase(11)
-        expected = Polynomial(np.array([1, 8, 9], dtype=int), self.base.rebase(11))
+        expected = Polynomial(np.array([2, 1, 3], dtype=int), self.base.rebase(11))
         self.assertEqual(poly2, expected)

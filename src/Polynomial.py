@@ -9,27 +9,17 @@ from src.ModuloBase import ModuloBase, accurate_round
 
 
 class Polynomial:
-    def __init__(self, coefficients, base: ModuloBase, n: int = None):
+    def __init__(self, coefficients, base: ModuloBase):
         if isinstance(coefficients, list):
             coefficients = np.array(coefficients, dtype=int)
         assert (coefficients.dtype == int)
         self.coefficients = self.__mod(coefficients, base.f) % base.q
-        if n:
-            self.coefficients = np.pad(self.coefficients, (n - self.coefficients.size, 0), constant_values=0)
+        n = base.f.size - 1
+        self.coefficients = np.pad(self.coefficients, (n - self.coefficients.size, 0), constant_values=0)
         self.base = base
 
-    def rebase(self, p: int, alter: bool = True, v: bool = False):
-        rebased_coefficients = accurate_round(self.coefficients*(p/self.base.q))
-        if v:
-            print(f"Old base: {self.base.q}, new base: {p}")
-            print(f"Coefficient size before: {self.coefficients.size}, after: {rebased_coefficients.size}")
-            print(f"Coefficients before: {self.coefficients}")
-            print(f"Rebased coefficients before round: \n{self.coefficients*(p/self.base.q)}")
-            print(f"Rebased coefficients after round: \n{rebased_coefficients}")
-        if alter:
-            return Polynomial(rebased_coefficients, self.base.rebase(p), self.coefficients.size)
-        else:
-            return Polynomial(self.coefficients, self.base.rebase(p), self.coefficients.size)
+    def rebase(self, p: int):
+        return Polynomial(self.coefficients, self.base.rebase(p))
 
     def __add__(self, other):
         assert isinstance(other, Polynomial) and self.base == other.base
@@ -82,13 +72,7 @@ class Polynomial:
 
     def __rshift__(self, other):
         if isinstance(other, int):
-            shifted = Polynomial(self.coefficients >> other, self.base, self.coefficients.size)
-            # print(len(shifted.coefficients))
-            # print(shifted.coefficients)
-            # print(len(self.coefficients))
-            # print(self.coefficients
-            # print(shifted.coefficients.size)
-            # print(self.coefficients.size)
+            shifted = Polynomial(self.coefficients >> other, self.base)
 
             assert shifted.coefficients.size == self.coefficients.size
             return shifted
