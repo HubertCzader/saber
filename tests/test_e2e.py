@@ -18,7 +18,8 @@ def test_end2end():
 
     saber = Saber()
 
-    total_attempts = 100
+    total_attempts = 10000
+
     successful_attempts = 0
     times = []
 
@@ -31,10 +32,10 @@ def test_end2end():
         end_time = time.time()
         times.append(end_time-start_time)
         try:
-            np.testing.assert_array_equal(msg, (decrypted_msg.coefficients-1)%2)
+            np.testing.assert_array_equal(msg, decrypted_msg.coefficients)
         except AssertionError as a:
             print(a)
-        if np.array_equal((decrypted_msg.coefficients-1)%2, msg):
+        if np.array_equal(decrypted_msg.coefficients, msg):
             successful_attempts += 1
     print(f"Successful encryption-decryption attempts ratio: {successful_attempts}/{total_attempts} = "
           f"{100*successful_attempts/total_attempts:.2f}%.")

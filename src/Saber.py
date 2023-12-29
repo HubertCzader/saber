@@ -12,7 +12,7 @@ import numpy as np
 from Crypto.Hash import SHAKE128
 
 from src.Polynomial import Polynomial
-from src.SaberConfiguration import SaberConfiguration, LIGHT_SABER
+from src.SaberConfiguration import SaberConfiguration, LIGHT_SABER, SABER, FIRE_SABER
 
 
 @dataclass
@@ -28,7 +28,7 @@ class Cryptogram:
 
 
 class Saber:
-    def __init__(self, saber_configuration: SaberConfiguration = LIGHT_SABER):
+    def __init__(self, saber_configuration: SaberConfiguration = FIRE_SABER):
         self.mi = saber_configuration.mi
         self.n = saber_configuration.n
         self.l = saber_configuration.l
