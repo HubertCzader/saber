@@ -40,7 +40,7 @@ class Saber:
         self.eps_T = saber_configuration.epsilon_T
         self.T = 2 ** saber_configuration.epsilon_T
 
-        self.h1 = Polynomial(np.full(saber_configuration.n, 2 ** (saber_configuration.epsilon_q - saber_configuration.epsilon_p - 1)), self.n)
+        self.h1 = Polynomial(np.full(saber_configuration.n, 2 ** (saber_configuration.epsilon_q - saber_configuration.epsilon_p - 1)), saber_configuration.n)
         self.h = np.full(self.l, self.h1)
         h2_coefficient = 2 ** (self.eps_p - 2) - 2 ** (self.eps_p - self.eps_T - 1) + 2 ** (self.eps_q - self.eps_T - 1)
         self.h2 = Polynomial(np.full(saber_configuration.n, h2_coefficient), self.n)
@@ -71,7 +71,7 @@ class Saber:
             r = np.random.uniform(size=256).round().astype(int)
 
         generator = np.random.default_rng(r)
-        s = np.array([Polynomial(generator.binomial(n=self.mi, p=0.5, size=self.n).round().astype(int), base)
+        s = np.array([Polynomial(generator.binomial(n=self.mi, p=0.5, size=self.n).round().astype(int), self.n)
                       - Polynomial(self.n * [self.mi / 2], self.n)
                       for _ in range(self.l)])
 
@@ -84,27 +84,27 @@ class Saber:
         s = self.__generate_s(r)
 
         A = self.gen_A(seed_A)
-        b = (np.matmul(A.transpose(), s) + self.h) >> (self.eps_q - self.eps_p)
-        b = np.array([poly.rebase(self.p) for poly in b])
+        b1 = (A.T @ s + self.h) % self.q
+        b = b1 >> (self.eps_q - self.eps_p)
         return s, (seed_A, b)
 
     def encrypt(self, m: np.ndarray[int], seed_A, b, rp: np.ndarray[int] = None) \
             -> Tuple[Polynomial, np.ndarray[Polynomial]]:
 
         sp = self.__generate_s(rp)
-        sq = [poly.rebase(self.q) for poly in sp]
 
         A = self.gen_A(seed_A)
-        bp = (A @ sq + self.h) >> (self.eps_q - self.eps_p)
-        bp = np.array([x.rebase(self.p) for x in bp])
-        vp = b.T @ sp
+        b_prim1 = (A @ sp + self.h) % self.q
+        b_prim = b_prim1 >> (self.eps_q - self.eps_p)
+        vp = (b.T @ sp) % self.p
 
         m = Polynomial(m, self.n)
 
-        cm: Polynomial = vp + self.h1 - (2 ** (self.eps_p - 1)) * m
-        cm = cm >> (self.eps_p - self.eps_T)
+        cm1: Polynomial = vp + self.h1 - (2 ** (self.eps_p - 1)) * m
+        cm2: Polynomial = cm1 % self.p
+        cm = cm2 >> (self.eps_p - self.eps_T)
 
-        return cm, bp
+        return cm, b_prim
 
     @staticmethod
     def round_all_Polynomials(vector: np.ndarray, p: int) -> np.ndarray[Polynomial]:
@@ -121,10 +121,9 @@ class Saber:
         assert isinstance(c_m, Polynomial)
         assert isinstance(b_prim, np.ndarray) and b_prim.dtype == Polynomial
 
-        s_p = np.array([poly.rebase(self.p) for poly in s])
-        v = (b_prim.T @ s_p)
+        v = (b_prim.T @ s) % self.p
 
-        # ToDo: Edytowac rebase
-        m_prim = v - (2 ** (self.eps_p - self.eps_T) * c_m) + self.h2
-        m_prim = (m_prim >> (self.eps_p - 1)).rebase(2)
+        m_prim1 = v - (2 ** (self.eps_p - self.eps_T) * c_m) + self.h2
+        m_prim2 = m_prim1 % self.p
+        m_prim = (m_prim2 >> (self.eps_p - 1))
         return m_prim
