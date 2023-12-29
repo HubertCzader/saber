@@ -18,7 +18,7 @@ class TestSaberSanity(unittest.TestCase):
         seed_A = np.array([1, 1, 1, 0, 1, 1, 1, 0], dtype=int)
         saber = Saber(config)
         s, (_, b) = saber.generate_key(seed_A, r)
-        cryptogram = saber.encrypt(m, seed_A, s, rp)
+        cryptogram = saber.encrypt(m, seed_A, b, rp)
         mp = saber.decrypt(cryptogram, s)
         np.testing.assert_array_equal(m, mp.coefficients)
 
