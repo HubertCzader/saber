@@ -28,7 +28,7 @@ class Cryptogram:
 
 
 class Saber:
-    def __init__(self, saber_configuration: SaberConfiguration = FIRE_SABER):
+    def __init__(self, saber_configuration: SaberConfiguration = SABER):
         self.mi = saber_configuration.mi
         self.n = saber_configuration.n
         self.l = saber_configuration.l
@@ -40,10 +40,11 @@ class Saber:
         self.eps_T = saber_configuration.epsilon_T
         self.T = 2 ** saber_configuration.epsilon_T
 
-        self.h1 = Polynomial(np.full(saber_configuration.n, 2 ** (saber_configuration.epsilon_q - saber_configuration.epsilon_p - 1)), saber_configuration.n)
+        self.h1 = Polynomial(np.full(self.n, 2 ** (self.eps_q - self.eps_p - 1)), self.n)
         self.h = np.full(self.l, self.h1)
-        h2_coefficient = 2 ** (self.eps_p - 2) - 2 ** (self.eps_p - self.eps_T - 1) + 2 ** (self.eps_q - self.eps_T - 1)
-        self.h2 = Polynomial(np.full(saber_configuration.n, h2_coefficient), self.n)
+        h2_coefficient = 2 ** (self.eps_p - 2) - 2 ** (self.eps_p - self.eps_T - 1) + 2 ** (self.eps_q - self.eps_p - 1)
+        self.h2 = Polynomial(np.full(self.n, h2_coefficient), self.n)
+        self.h2 %= self.q
 
     def gen_A(self, seed_A) -> np.ndarray:
         byte_seed = np.packbits(seed_A.reshape((-1, 8))).tobytes()
@@ -123,7 +124,7 @@ class Saber:
 
         v = (b_prim.T @ s) % self.p
 
-        m_prim1 = v - (2 ** (self.eps_p - self.eps_T) * c_m) + self.h2
+        m_prim1 = v - (2 ** (self.eps_p - self.eps_T)) * c_m + self.h2
         m_prim2 = m_prim1 % self.p
         m_prim = (m_prim2 >> (self.eps_p - 1))
         return m_prim
