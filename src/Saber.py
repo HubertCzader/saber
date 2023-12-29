@@ -11,7 +11,6 @@ from dataclasses import dataclass
 import numpy as np
 from Crypto.Hash import SHAKE128
 
-from src.ModuloBase import ModuloBase
 from src.Polynomial import Polynomial
 from src.SaberConfiguration import SaberConfiguration, LIGHT_SABER
 
@@ -41,16 +40,10 @@ class Saber:
         self.eps_T = saber_configuration.epsilon_T
         self.T = 2 ** saber_configuration.epsilon_T
 
-        poly_base = [1] + [0] * (saber_configuration.n - 1) + [1]
-        self.p_base = ModuloBase(np.array(poly_base, dtype=int), self.p)
-        self.q_base = ModuloBase(np.array(poly_base, dtype=int), self.q)
-
-        self.h1 = Polynomial(np.full(saber_configuration.n,
-                                     2 ** (saber_configuration.epsilon_q - saber_configuration.epsilon_p - 1)),
-                             self.q_base)
+        self.h1 = Polynomial(np.full(saber_configuration.n, 2 ** (saber_configuration.epsilon_q - saber_configuration.epsilon_p - 1)), self.n)
         self.h = np.full(self.l, self.h1)
         h2_coefficient = 2 ** (self.eps_p - 2) - 2 ** (self.eps_p - self.eps_T - 1) + 2 ** (self.eps_q - self.eps_T - 1)
-        self.h2 = Polynomial(np.full(saber_configuration.n, h2_coefficient), self.q_base)
+        self.h2 = Polynomial(np.full(saber_configuration.n, h2_coefficient), self.n)
 
     def gen_A(self, seed_A) -> np.ndarray:
         byte_seed = np.packbits(seed_A.reshape((-1, 8))).tobytes()
@@ -70,16 +63,16 @@ class Saber:
             for A_col in range(nums.shape[1]):
                 poly = nums[A_row][A_col]
                 a = [coefficient.dot(2 ** np.arange(coefficient.size)[::-1]) for coefficient in poly]
-                A[A_row][A_col] = Polynomial(a, self.q_base)
+                A[A_row][A_col] = Polynomial(a, self.n)
         return A
 
-    def __generate_s(self, base, r=None):
+    def __generate_s(self, r=None):
         if r is None:
             r = np.random.uniform(size=256).round().astype(int)
 
         generator = np.random.default_rng(r)
         s = np.array([Polynomial(generator.binomial(n=self.mi, p=0.5, size=self.n).round().astype(int), base)
-                      - Polynomial(self.n * [self.mi / 2], base)
+                      - Polynomial(self.n * [self.mi / 2], self.n)
                       for _ in range(self.l)])
 
         return s
@@ -88,7 +81,7 @@ class Saber:
         if seed_A is None:
             seed_A = np.random.uniform(size=self.n).round().astype(int)
 
-        s = self.__generate_s(self.q_base, r)
+        s = self.__generate_s(r)
 
         A = self.gen_A(seed_A)
         b = (np.matmul(A.transpose(), s) + self.h) >> (self.eps_q - self.eps_p)
@@ -98,7 +91,7 @@ class Saber:
     def encrypt(self, m: np.ndarray[int], seed_A, b, rp: np.ndarray[int] = None) \
             -> Tuple[Polynomial, np.ndarray[Polynomial]]:
 
-        sp = self.__generate_s(self.p_base, rp)
+        sp = self.__generate_s(rp)
         sq = [poly.rebase(self.q) for poly in sp]
 
         A = self.gen_A(seed_A)
@@ -106,12 +99,11 @@ class Saber:
         bp = np.array([x.rebase(self.p) for x in bp])
         vp = b.T @ sp
 
-        m = Polynomial(m, self.p_base)
+        m = Polynomial(m, self.n)
 
-        cm: Polynomial = vp + self.h1.rebase(self.p) - (2 ** (self.eps_p - 1)) * m
+        cm: Polynomial = vp + self.h1 - (2 ** (self.eps_p - 1)) * m
         cm = cm >> (self.eps_p - self.eps_T)
 
-        cm = cm.rebase(self.T)
         return cm, bp
 
     @staticmethod
@@ -133,6 +125,6 @@ class Saber:
         v = (b_prim.T @ s_p)
 
         # ToDo: Edytowac rebase
-        m_prim = v - (2 ** (self.eps_p - self.eps_T) * c_m.rebase(self.p)) + self.h2.rebase(self.p)
+        m_prim = v - (2 ** (self.eps_p - self.eps_T) * c_m) + self.h2
         m_prim = (m_prim >> (self.eps_p - 1)).rebase(2)
         return m_prim

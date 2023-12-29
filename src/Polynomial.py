@@ -5,44 +5,32 @@ AGH University of Cracow
 """
 import numpy as np
 
-from src.ModuloBase import ModuloBase, accurate_round
-
-
 class Polynomial:
-    def __init__(self, coefficients, base: ModuloBase):
+    def __init__(self, coefficients, n: int):
         if isinstance(coefficients, list):
             coefficients = np.array(coefficients, dtype=int)
         assert (coefficients.dtype == int)
-        self.coefficients = self.__mod(coefficients, base.f) % base.q
-        n = base.f.size - 1
+        self.f = np.array([1] + [0] * (n - 1) + [1], dtype=int)
+        self.n = n
+        self.coefficients = self.__mod(coefficients, self.f)
         self.coefficients = np.pad(self.coefficients, (n - self.coefficients.size, 0), constant_values=0)
-        self.base = base
-
-    def rebase(self, p: int):
-        return Polynomial(self.coefficients, self.base.rebase(p))
 
     def __add__(self, other):
-        assert isinstance(other, Polynomial) and self.base == other.base
-        new_size = max(self.coefficients.shape[-1], other.coefficients.shape[-1])
-        coeff1 = np.pad(self.coefficients, pad_width=(new_size - self.coefficients.shape[-1], 0), mode='constant',
-                        constant_values=(0, 0))
-        coeff2 = np.pad(other.coefficients, pad_width=(new_size - other.coefficients.shape[-1], 0), mode='constant',
-                        constant_values=(0, 0))
-        a = coeff1
-        return Polynomial(coeff1 + coeff2, self.base)
+        assert isinstance(other, Polynomial) and self.n == other.n
+        return Polynomial(self.coefficients + other.coefficients, self.n)
 
     def __neg__(self):
-        return Polynomial(-self.coefficients, self.base)
+        return Polynomial(-self.coefficients, self.n)
 
     def __sub__(self, other):
         return self + (-other)
 
     def __mul__(self, other):
         if isinstance(other, Polynomial):
-            assert self.base == other.base
-            return Polynomial(np.polymul(self.coefficients, other.coefficients).astype(int), self.base)
+            assert self.n == other.n
+            return Polynomial(np.polymul(self.coefficients, other.coefficients).astype(int), self.n)
         elif isinstance(other, int):
-            return Polynomial(self.coefficients * other, self.base)
+            return Polynomial(self.coefficients * other, self.n)
         else:
             raise TypeError("__mul__ accepts only Polynomial and int types")
 
@@ -61,18 +49,18 @@ class Polynomial:
 
     def __eq__(self, other):
         return isinstance(other, Polynomial) \
-            and self.base == other.base \
+            and self.n == other.n \
             and np.all(self.coefficients == other.coefficients)
 
     def __mod__(self, other):
         if isinstance(other, int):
-            return Polynomial(self.coefficients % other, self.base)
+            return Polynomial(self.coefficients % other, self.n)
         else:
             raise TypeError("Polynomial % () accepts only int types")
 
     def __rshift__(self, other):
         if isinstance(other, int):
-            shifted = Polynomial(self.coefficients >> other, self.base)
+            shifted = Polynomial(self.coefficients >> other, self.n)
 
             assert shifted.coefficients.size == self.coefficients.size
             return shifted
@@ -83,9 +71,9 @@ class Polynomial:
         return (np.polydiv(coefficients, f)[1]).astype(int)
 
     @staticmethod
-    def init_many(multi_coefficients: np.ndarray, base: ModuloBase):
-        return np.apply_along_axis(lambda x: Polynomial(coefficients=x, base=base), -1, multi_coefficients)
+    def init_many(multi_coefficients: np.ndarray, n: int):
+        return np.apply_along_axis(lambda x: Polynomial(coefficients=x, n=n), -1, multi_coefficients)
 
     @staticmethod
-    def zero(base):
-        return Polynomial(np.array([0]), base)
+    def zero(n: int):
+        return Polynomial(np.array([0]), n)

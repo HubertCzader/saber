@@ -1,9 +1,6 @@
 import unittest
 
 import numpy as np
-
-from src.ModuloBase import ModuloBase
-from src.Polynomial import Polynomial
 from src.Saber import Saber
 from src.SaberConfiguration import SaberConfiguration
 
