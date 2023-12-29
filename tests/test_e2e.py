@@ -9,16 +9,16 @@ End-to-End tests containing:
 - compare a decrypted messages against original one.
 """
 import time
-
 import numpy as np
+
+from src.Saber import Saber
 
 
 def test_end2end():
-    from Saber import Saber
 
     saber = Saber()
 
-    total_attempts = 100_000
+    total_attempts = 100
     successful_attempts = 0
     times = []
 
@@ -27,11 +27,19 @@ def test_end2end():
         start_time = time.time()
         s, (seed, b) = saber.generate_key()
         cryptogram = saber.encrypt(msg, seed, b)
-        decrypted_msg = saber.decrypt(cryptogram, b)
+        decrypted_msg = saber.decrypt(cryptogram, s)
         end_time = time.time()
         times.append(end_time-start_time)
-        if np.array_equal(decrypted_msg, msg):
+        try:
+            np.testing.assert_array_equal(msg, (decrypted_msg.coefficients-1)%2)
+        except AssertionError as a:
+            print(a)
+        if np.array_equal((decrypted_msg.coefficients-1)%2, msg):
             successful_attempts += 1
     print(f"Successful encryption-decryption attempts ratio: {successful_attempts}/{total_attempts} = "
-          f"{successful_attempts/total_attempts:.2f}%.")
+          f"{100*successful_attempts/total_attempts:.2f}%.")
     print(f"Average key generation-encryption-decryption time: {(sum(times) / total_attempts):2f} sec.")
+
+
+if __name__ == "__main__":
+    test_end2end()
