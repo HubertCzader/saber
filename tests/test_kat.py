@@ -2,14 +2,13 @@
 Known Answer Test
 """
 from dataclasses import dataclass
-
+# from KeyGen import key_gen
 import pytest
 
 # tests ####################################################
 
 
 def test_key_generation(light_saber_configuration, light_saber_test_cases):
-    from KeyGen import key_gen
 
     for kat_test_case_data in light_saber_test_cases:
         print(kat_test_case_data)
